@@ -23,7 +23,7 @@ OperationFilter filters list of operations. For example: return first\last\all O
 Reducer receives list of Operations and performs target task. 
 For example: invoking all operation's actions.
 
-#####Example #1
+##### Example #1
 
 Suppose we have a task to buy home appliances. We can buy only one item, and we have a limited budget. 
 Therefore, we have a set of conditions and positions in priority order.
@@ -65,7 +65,7 @@ This piece of code on spock lang simulates such task:
         assert purchase == 'VHSPlayer'
     }
 
-#####Example #2
+##### Example #2
 Suppose we need to send an email with a list of customer names who have agreed to purchase our software.
 In this situation Action would return customer name and reducer would combine it into one email.
 
@@ -92,7 +92,7 @@ In this situation Action would return customer name and reducer would combine it
          assert names == TARGET_NAMES
      }
 
-####Conditions
+#### Conditions
 
 OperationEngine allows you to create Condition objects from strings. Consider the mechanism of such creation on the example of a logical expression:
 
@@ -101,7 +101,7 @@ OperationEngine allows you to create Condition objects from strings. Consider th
 2. Transform literal list to prefix notation
 3. Construct condition
 
-#####Build literal list
+##### Build literal list
 Logical expression is transformed to literal list.
 
 (conditionXXX or conditionYYY) and not conditionZZZ -> [OPEN_BRACKET, PARAM(conditionXXX), OR, PARAM(conditionYYY), CLOSE_BRACKET, AND, NOT, PARAM(conditionZZZ)]
@@ -124,7 +124,7 @@ Symbol:
     NOT - !
 It is possible to define custom OperatorRepresentation.
 
-#####Transform literal list to prefix notation 
+##### Transform literal list to prefix notation 
 Received list of literals is in infix form. We should transform it to prefix.
 
     LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
@@ -134,7 +134,7 @@ Received list of literals is in infix form. We should transform it to prefix.
 
 We transform [OPEN_BRACKET, PARAM, OR, PARAM, CLOSE_BRACKET, AND, NOT, PARAM] to [AND, OR, PARAM(conditionXXX), PARAM(conditionYYY), NOT, PARAM(conditionZZZ)].
 
-#####Construct condition
+##### Construct condition
 Target condition is a condition consists of subconditions such as AndCondition, OrCondition, NotCondition, CustomCondition.
 It is possible to present via 'condition tree':
 
@@ -178,7 +178,7 @@ Constructing:
                                         ]
     Condition targetCondition = new ConditionConstructorFromPrefixLiterals(conditions, prefixLiterals).construct()
 
-#####ConditionTransformer
+##### ConditionTransformer
 
 ConditionTransformer transforms condition to list of literals.
 
@@ -187,7 +187,7 @@ ConditionTransformer transforms condition to list of literals.
 
 Transformation of target condition from previous example: targetCondition -> [AND, OR, PARAM(conditionXXX), PARAM(conditionYYY), NOT, PARAM(conditionZZZ)].
 
-#####ConditionCalculator
+##### ConditionCalculator
 
 ConditionCalculator validates conditions and return Map - [key: id of condition, value: result of condition].
 
