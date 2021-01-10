@@ -7,10 +7,11 @@ import com.wwkarev.operationengine.condition.TrueCondition
 import com.wwkarev.operationengine.literal.Literal
 import com.wwkarev.operationengine.literal.LiteralType
 import com.wwkarev.operationengine.literal.LiteralUtil
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ConditionTransformerToPrefixLiteralsTest extends Specification {
+class ConditionTransformerToInfixLiteralsTest extends Specification {
     @Shared
     Condition condition1 = new TrueCondition('condition1')
 
@@ -24,17 +25,19 @@ class ConditionTransformerToPrefixLiteralsTest extends Specification {
         when:
         Condition resultCondition = condition1 & ~(condition2 | condition3)
 
-        ConditionTransformerToPrefixLiterals conditionTransformer = new ConditionTransformerToPrefixLiterals(resultCondition)
+        ConditionTransformerToPrefixLiterals conditionTransformer = new ConditionTransformerToInfixLiterals(resultCondition)
         List<Literal> transformedLiteralList = conditionTransformer.transform()
 
 
         def destResultList = [
-                new Literal(LiteralType.AND),
                 new Literal('condition1', LiteralType.PARAM),
+                new Literal(LiteralType.AND),
                 new Literal(LiteralType.NOT),
-                new Literal(LiteralType.OR),
+                new Literal(LiteralType.OPEN_BRACKET),
                 new Literal('condition2', LiteralType.PARAM),
+                new Literal(LiteralType.OR),
                 new Literal('condition3', LiteralType.PARAM),
+                new Literal(LiteralType.CLOSE_BRACKET)
         ]
         then:
         assert LiteralUtil.isLiteralListsEqual(transformedLiteralList, destResultList)

@@ -4,16 +4,9 @@ package com.wwkarev.operationengine.condition
  * TRUE condition class
  * @author Vitalii Karev (wwkarev)
  */
-class TrueCondition implements Condition {
-    private String id
-
+class TrueCondition extends Condition {
     TrueCondition(String id) {
-        this.id = id
-    }
-
-    @Override
-    String getId() {
-        return id
+        super(id)
     }
 
     @Override

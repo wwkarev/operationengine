@@ -94,14 +94,68 @@ In this situation Action would return customer name and reducer would combine it
 
 #### Conditions
 
-OperationEngine allows you to create Condition objects from strings. Consider the mechanism of such creation on the example of a logical expression:
+##### Construct condition
+Condition object returns boolean value. Condition objects can be combined using the `&` (and), `|` (or), `~`(not) operators.
+Target condition is a condition consists of subconditions such as AndCondition, OrCondition, NotCondition, CustomCondition.
+It is possible to present via 'condition tree':
 
-(conditionXXX or conditionYYY) and not conditionZZZ
+
+                      AndCondition
+                /                    \
+        OrCondition               NotCondition
+        /         \                     |
+    conditionXXX   conditionYYY     conditionZZZ
+
+Constructing:
+    
+    Condition condition1 = new TrueCondition('conditionXXX')
+    Condition condition2 = new TrueCondition('conditionYYY')
+    Condition condition3 = new TrueCondition('conditionZZZ')
+    Condition targetCondition = (condition1 | condition2) & !condition3
+
+##### ConditionTransformer
+
+ConditionTransformer transforms condition to list of literals.
+
+    ConditionTransformer conditionTransformer = new ConditionTransformerToInfixLiteralsTest(targetCondition)
+    List<Literal> transformedLiteralList = conditionTransformer.transform()
+
+Transformation of target condition from previous example: targetCondition -> [OPEN_BRACKET, PARAM(conditionXXX), OR, PARAM(conditionYYY), CLOSE_BRACKET, AND, NOT, PARAM(conditionZZZ)].
+
+##### ConditionCalculator
+
+ConditionCalculator validates conditions and return Map - [key: id of condition, value: result of condition].
+
+    ConditionCalculator conditionCalculator = new ConditionCalculator(condition)
+    Map<String, Boolean> results = conditionCalculator.calculate()
+
+##### MemorizingConditionTransformer
+MemorizingConditionTransformer transforms condition (and all subconditions) to MemorizingCondition. 
+It's useful using of MemorizingCondition with ConditionCalculator in order each condition is calculated only once. 
+
+    MemorizingConditionTransformer conditionTransformer = new MemorizingConditionTransformer(condition)
+    Condition memorizingCondition = conditionTransformer.transform()
+    
+##### LiteralNotationTransformer
+
+LiteralNotationTransformer transforms list of literals from one notation to another.
+For example: 
+
+    LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
+    notationTransformer.infixToPrefix(literals)
+    
+Transforms `[OPEN_BRACKET, PARAM(conditionXXX), OR, PARAM(conditionYYY), CLOSE_BRACKET, AND, NOT, PARAM(conditionZZZ)]` -> `[AND, OR, PARAM(conditionXXX), PARAM(conditionYYY), NOT, PARAM(conditionZZZ)].`
+
+##### ConditionConstructor
+
+ConditionConstructor allows you to create Condition objects from strings. Consider the mechanism of such creation on the example of a logical expression:
+
+`(conditionXXX or conditionYYY) and not conditionZZZ`
 1. Build literal list 
 2. Transform literal list to prefix notation
 3. Construct condition
 
-##### Build literal list
+###### Build literal list
 Logical expression is transformed to literal list.
 
 (conditionXXX or conditionYYY) and not conditionZZZ -> [OPEN_BRACKET, PARAM(conditionXXX), OR, PARAM(conditionYYY), CLOSE_BRACKET, AND, NOT, PARAM(conditionZZZ)]
@@ -124,50 +178,12 @@ Symbol:
     NOT - !
 It is possible to define custom OperatorRepresentation.
 
-##### Transform literal list to prefix notation 
-Received list of literals is in infix form. We should transform it to prefix.
-
-    LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
-    List<Literal> prefixLiterals = notationTransformer.infixToPrefix(
-            literals
-    )
-
-We transform [OPEN_BRACKET, PARAM, OR, PARAM, CLOSE_BRACKET, AND, NOT, PARAM] to [AND, OR, PARAM(conditionXXX), PARAM(conditionYYY), NOT, PARAM(conditionZZZ)].
-
-##### Construct condition
-Target condition is a condition consists of subconditions such as AndCondition, OrCondition, NotCondition, CustomCondition.
-It is possible to present via 'condition tree':
-
-
-                      AndCondition
-                /                    \
-        OrCondition               NotCondition
-        /         \                     |
-    conditionXXX   conditionYYY     conditionZZZ
-
-Constructing:
-    
-    Condition condition1 = new TrueCondition('conditionXXX')
-    Condition condition2 = new TrueCondition('conditionYYY')
-    Condition condition3 = new TrueCondition('conditionZZZ')
-    Map<String, Condition> conditions = [
-                                            (condition1.getId()): condition1, 
-                                            (condition2.getId()): condition2, 
-                                            (condition3.getId()): condition3
-                                        ]
-    Condition targetCondition = new ConditionConstructorFromPrefixLiterals(conditions, prefixLiterals).construct()
-
-##### Full condition construction code:
+###### Full condition construction code:
     
     OperatorRepresentation operatorRepresentation = new ClassicOperatorRepresentation()
     String logicalExpression = '(conditionXXX or conditionYYY) and not conditionZZZ'
     List<Literal> literals = new LiteralBuilder(operatorRepresentation).buildByLogicalExpression(logicalExpression)
     
-    LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
-    List<Literal> prefixLiterals = notationTransformer.infixToPrefix(
-            literals
-    )
-    
     Condition condition1 = new TrueCondition('conditionXXX')
     Condition condition2 = new TrueCondition('conditionYYY')
     Condition condition3 = new TrueCondition('conditionZZZ')
@@ -176,27 +192,5 @@ Constructing:
                                             (condition2.getId()): condition2, 
                                             (condition3.getId()): condition3
                                         ]
-    Condition targetCondition = new ConditionConstructorFromPrefixLiterals(conditions, prefixLiterals).construct()
+    Condition targetCondition = new ConditionConstructorFromInfixLiterals(conditions, literals).construct()
 
-##### ConditionTransformer
-
-ConditionTransformer transforms condition to list of literals.
-
-    ConditionTransformer conditionTransformer = new ConditionTransformerToPrefixLiterals(targetCondition)
-    List<Literal> transformedLiteralList = conditionTransformer.transform()
-
-Transformation of target condition from previous example: targetCondition -> [AND, OR, PARAM(conditionXXX), PARAM(conditionYYY), NOT, PARAM(conditionZZZ)].
-
-##### ConditionCalculator
-
-ConditionCalculator validates conditions and return Map - [key: id of condition, value: result of condition].
-
-    ConditionCalculator conditionCalculator = new ConditionCalculator(condition)
-    Map<String, Boolean> results = conditionCalculator.calculate()
-
-MemorizingConditionTransformer
-MemorizingConditionTransformer transforms condition (and all subconditions) to MemorizingCondition. 
-It's useful using of MemorizingCondition with ConditionCalculator in order each condition is calculated only once. 
-
-    MemorizingConditionTransformer conditionTransformer = new MemorizingConditionTransformer(condition)
-    Condition memorizingCondition = conditionTransformer.transform()

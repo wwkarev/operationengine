@@ -4,20 +4,14 @@ package com.wwkarev.operationengine.condition
  * AND condition class
  * @author Vitalii Karev (wwkarev)
  */
-class AndCondition implements Condition {
-    private String id
+class AndCondition extends Condition {
     private Condition leftCondition
     private Condition rightCondition
 
     AndCondition(String id, Condition leftCondition, Condition rightCondition) {
-        this.id = id
+        super(id)
         this.leftCondition = leftCondition
         this.rightCondition = rightCondition
-    }
-
-    @Override
-    String getId() {
-        return id
     }
 
     @Override

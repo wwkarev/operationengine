@@ -8,23 +8,6 @@ import groovy.transform.InheritConstructors;
  * @author Vitalii Karev (wwkarev)
  */
 final class LiteralNotationTransformer {
-    private Integer getPriority(LiteralType type)
-    {
-        Integer priority = 0
-        switch (type) {
-            case LiteralType.OR:
-                priority = 1
-                break
-            case LiteralType.AND:
-                priority = 2
-                break
-            case LiteralType.NOT:
-                priority = 3
-                break
-        }
-        return priority
-    }
-
     List<Literal> infixToPostfix(List<Literal> infixLiterals)
     {
         infixLiterals = [new Literal(LiteralType.OPEN_BRACKET)] + infixLiterals + [new Literal(LiteralType.CLOSE_BRACKET)]
@@ -81,9 +64,9 @@ final class LiteralNotationTransformer {
 
     List<Literal> postfixToInfix(List<Literal> postfixLiterals) {
         try {
-            List<List<Literal>> serviceList = []
-            List<Literal> infixLiterals = _postfixToInfix(postfixLiterals, serviceList)
-            if (serviceList.size() > 0) {
+            List<LiteralContainer> containers = []
+            List<Literal> infixLiterals = _postfixToInfix(postfixLiterals, containers)
+            if (containers.size() > 0) {
                 throw new LiteralNotationTransformer.TransformException()
             }
             return infixLiterals
@@ -92,41 +75,97 @@ final class LiteralNotationTransformer {
         }
     }
 
-    private List<Literal> _postfixToInfix(List<Literal> postfixLiterals, List<List<Literal>> serviceList) {
+    private Integer getPriority(LiteralType type)
+    {
+        Integer priority = 0
+        switch (type) {
+            case LiteralType.OR:
+                priority = 1
+                break
+            case LiteralType.AND:
+                priority = 2
+                break
+            case LiteralType.NOT:
+                priority = 3
+                break
+        }
+        return priority
+    }
+
+    private Integer getBracketPriority(LiteralType type)
+    {
+        Integer priority = 0
+        switch (type) {
+            case LiteralType.NOT:
+                priority = 1
+                break
+            case LiteralType.AND:
+                priority = 2
+                break
+            case LiteralType.OR:
+                priority = 3
+                break
+        }
+        return priority
+    }
+
+    private List<Literal> _postfixToInfix(List<Literal> postfixLiterals, List<LiteralContainer> containers) {
         postfixLiterals.each{literal ->
             switch (literal.getType()) {
                 case LiteralType.AND:
-                    List<Literal> leftLiterals = serviceList.removeLast()
-                    List<Literal> rightLiterals = serviceList.removeLast()
-                    serviceList.add(
-                            [new Literal(LiteralType.OPEN_BRACKET)] + leftLiterals +
-                                    [new Literal(LiteralType.AND)] +
-                                    rightLiterals + [new Literal(LiteralType.CLOSE_BRACKET)]
-                    )
+                    LiteralContainer leftContainer = containers.removeLast()
+                    LiteralContainer rightContainer = containers.removeLast()
+
+                    List<Literal> literals = []
+                    if (getBracketPriority(leftContainer.literalType) > getBracketPriority(literal.getType())) {
+                        literals += (
+                                [new Literal(LiteralType.OPEN_BRACKET)] +
+                                leftContainer.literals + [new Literal(LiteralType.CLOSE_BRACKET)]
+                        )
+                    } else {
+                        literals += leftContainer.literals
+                    }
+
+                    literals += [new Literal(literal.getType())]
+
+                    if (getBracketPriority(rightContainer.literalType) > getBracketPriority(literal.getType())) {
+                        literals += (
+                                [new Literal(LiteralType.OPEN_BRACKET)] +
+                                        rightContainer.literals + [new Literal(LiteralType.CLOSE_BRACKET)]
+                        )
+                    } else {
+                        literals += rightContainer.literals
+                    }
+
+                    containers.add(new LiteralContainer(literalType: literal.getType(), literals: literals))
                     break
                 case LiteralType.OR:
-                    List<Literal> leftLiterals = serviceList.removeLast()
-                    List<Literal> rightLiterals = serviceList.removeLast()
-                    serviceList.add(
-                            [new Literal(LiteralType.OPEN_BRACKET)] + leftLiterals +
-                                    [new Literal(LiteralType.OR)] +
-                                    rightLiterals + [new Literal(LiteralType.CLOSE_BRACKET)]
-                    )
+                    LiteralContainer leftContainer = containers.removeLast()
+                    LiteralContainer rightContainer = containers.removeLast()
+
+                    List<Literal> literals = leftContainer.literals + [new Literal(literal.getType())] + rightContainer.literals
+                    containers.add(new LiteralContainer(literalType: literal.getType(), literals: literals))
                     break
                 case LiteralType.NOT:
-                    List<Literal> notLiterals = serviceList.removeLast()
-                    serviceList.add(
-                            [new Literal(LiteralType.NOT)] +[new Literal(LiteralType.OPEN_BRACKET)] +
-                                    notLiterals + [new Literal(LiteralType.CLOSE_BRACKET)]
-                    )
+                    LiteralContainer notContainer = containers.removeLast()
+                    List<Literal> literals = [new Literal(literal.getType())] + notContainer.literals
+                    if (getBracketPriority(notContainer.literalType) > getBracketPriority(literal.getType())) {
+                        literals = [new Literal(literal.getType())] + [new Literal(LiteralType.OPEN_BRACKET)] +
+                                notContainer.literals + [new Literal(LiteralType.CLOSE_BRACKET)]
+                    }
+                    containers.add(new LiteralContainer(literalType: literal.getType(), literals: literals))
                     break
                 case LiteralType.PARAM:
-                    serviceList.add([literal])
+                    containers.add(new LiteralContainer(literalType: literal.getType(), literals: [literal]))
                     break
             }
         }
+        return containers.removeLast().literals
+    }
 
-        return serviceList.removeLast()
+    private static class LiteralContainer {
+        LiteralType literalType
+        List<Literal> literals
     }
 
     @InheritConstructors

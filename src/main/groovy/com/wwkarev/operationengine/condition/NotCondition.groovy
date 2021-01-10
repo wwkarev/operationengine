@@ -4,18 +4,12 @@ package com.wwkarev.operationengine.condition
  * NOT condition class
  * @author Vitalii Karev (wwkarev)
  */
-class NotCondition implements Condition{
-    private String id
+class NotCondition extends Condition {
     private Condition condition
 
     NotCondition(String id, Condition condition) {
-        this.id = id
+        super(id)
         this.condition = condition
-    }
-
-    @Override
-    String getId() {
-        return id
     }
 
     @Override

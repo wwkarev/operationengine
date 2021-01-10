@@ -13,7 +13,7 @@ import com.wwkarev.operationengine.literal.LiteralType
  * @author Vitalii Karev (wwkarev)
  */
 class ConditionTransformerToPrefixLiterals implements ConditionTransformer {
-    private Condition condition
+    protected Condition condition
 
     ConditionTransformerToPrefixLiterals(Condition condition) {
         this.condition = condition

@@ -56,9 +56,6 @@ class LiteralNotationTransformerTest extends Specification {
 
     def "test NotationTransformerTest. PrefixToInfix"() {
         when:
-//        String str = '(not_Hello_not and not (WO_-RLD))'
-        String str = 'not_Hello_not and not WO_-RLD'
-
         OperatorRepresentation literalRepresentation = new ClassicOperatorRepresentation()
 
         LiteralBuilder literalBuilder = new LiteralBuilder(literalRepresentation)
@@ -66,18 +63,30 @@ class LiteralNotationTransformerTest extends Specification {
         LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
         List<Literal> transformedLiteralList = notationTransformer.prefixToInfix(notationTransformer.infixToPrefix(srcLiteralList))
 
-        def destResultList = [
-                new Literal(LiteralType.OPEN_BRACKET),
+        then:
+        assert LiteralUtil.isLiteralListsEqual(transformedLiteralList, destResultList) == true
+        where:
+        str|destResultList
+        'not_Hello_not and not WO_-RLD'|[
                 new Literal('not_Hello_not', LiteralType.PARAM),
                 new Literal(LiteralType.AND),
                 new Literal(LiteralType.NOT),
+                new Literal('WO_-RLD', LiteralType.PARAM)
+        ]
+        '(xxx or yyy) and not (zzz and xxx)'|[
                 new Literal(LiteralType.OPEN_BRACKET),
-                new Literal('WO_-RLD', LiteralType.PARAM),
+                new Literal('xxx', LiteralType.PARAM),
+                new Literal(LiteralType.OR),
+                new Literal('yyy', LiteralType.PARAM),
                 new Literal(LiteralType.CLOSE_BRACKET),
+                new Literal(LiteralType.AND),
+                new Literal(LiteralType.NOT),
+                new Literal(LiteralType.OPEN_BRACKET),
+                new Literal('zzz', LiteralType.PARAM),
+                new Literal(LiteralType.AND),
+                new Literal('xxx', LiteralType.PARAM),
                 new Literal(LiteralType.CLOSE_BRACKET)
         ]
-        then:
-        assert LiteralUtil.isLiteralListsEqual(transformedLiteralList, destResultList) == true
     }
 
     def "test NotationTransformerTest. PrefixToInfix. Illegal prefix literals"() {

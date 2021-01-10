@@ -4,16 +4,9 @@ package com.wwkarev.operationengine.condition
  * FALSE condition class
  * @author Vitalii Karev (wwkarev)
  */
-class FalseCondition implements Condition {
-    private String id
-
+class FalseCondition extends Condition {
     FalseCondition(String id) {
-        this.id = id
-    }
-
-    @Override
-    String getId() {
-        return id
+        super(id)
     }
 
     @Override

@@ -1,11 +1,6 @@
 package com.wwkarev.operationengine.conditionconstructor
 
-import com.wwkarev.operationengine.condition.AndCondition
-import com.wwkarev.operationengine.condition.Condition
-import com.wwkarev.operationengine.condition.FalseCondition
-import com.wwkarev.operationengine.condition.NotCondition
-import com.wwkarev.operationengine.condition.OrCondition
-import com.wwkarev.operationengine.condition.TrueCondition
+import com.wwkarev.operationengine.condition.*
 import com.wwkarev.operationengine.literal.Literal
 import com.wwkarev.operationengine.literal.LiteralBuilder
 import com.wwkarev.operationengine.literal.LiteralNotationTransformer
@@ -13,7 +8,7 @@ import com.wwkarev.operationengine.literal.representation.ClassicOperatorReprese
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ConditionConstructorFromPrefixLiteralsTest extends Specification {
+class ConditionConstructorFromInfixLiteralsTest extends Specification {
     @Shared
     Condition condition1 = new TrueCondition('condition1')
 
@@ -29,11 +24,8 @@ class ConditionConstructorFromPrefixLiteralsTest extends Specification {
         Map<String, Condition> conditions = [(condition1.getId()): condition1, (condition2.getId()): condition2]
 
         LiteralBuilder literalBuilder = new LiteralBuilder(new ClassicOperatorRepresentation())
-        LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
-        List<Literal> literalList = notationTransformer.infixToPrefix(
-                literalBuilder.buildByLogicalExpression(logicalExpression)
-        )
-        new ConditionConstructorFromPrefixLiterals(conditions, literalList).construct()
+        List<Literal> literalList = literalBuilder.buildByLogicalExpression(logicalExpression)
+        new ConditionConstructorFromInfixLiterals(conditions, literalList).construct()
         then:
         thrown ConditionConstructor.ConditionNotFoundException
     }
@@ -43,11 +35,8 @@ class ConditionConstructorFromPrefixLiteralsTest extends Specification {
         Map<String, Condition> conditions = [(condition1.getId()): condition1, (condition2.getId()): condition2, (condition3.getId()): condition3]
 
         LiteralBuilder literalBuilder = new LiteralBuilder(new ClassicOperatorRepresentation())
-        LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
-        List<Literal> literalList = notationTransformer.infixToPrefix(
-                literalBuilder.buildByLogicalExpression(logicalExpression)
-        )
-        new ConditionConstructorFromPrefixLiterals(conditions, literalList).construct()
+        List<Literal> literalList = literalBuilder.buildByLogicalExpression(logicalExpression)
+        new ConditionConstructorFromInfixLiterals(conditions, literalList).construct()
         then:
         thrown ConditionConstructor.ConstructionException
         where:
@@ -63,11 +52,8 @@ class ConditionConstructorFromPrefixLiteralsTest extends Specification {
         Map<String, Condition> conditions = [(condition1.getId()): condition1, (condition2.getId()): condition2, (condition3.getId()): condition3]
 
         LiteralBuilder literalBuilder = new LiteralBuilder(new ClassicOperatorRepresentation())
-        LiteralNotationTransformer notationTransformer = new LiteralNotationTransformer()
-        List<Literal> literalList = notationTransformer.infixToPrefix(
-                literalBuilder.buildByLogicalExpression(logicalExpression)
-        )
-        Condition resultCondition = new ConditionConstructorFromPrefixLiterals(conditions, literalList).construct()
+        List<Literal> literalList = literalBuilder.buildByLogicalExpression(logicalExpression)
+        Condition resultCondition = new ConditionConstructorFromInfixLiterals(conditions, literalList).construct()
         resultFunc(resultCondition)
         then:
         notThrown IllegalArgumentException

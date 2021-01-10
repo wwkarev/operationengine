@@ -4,11 +4,12 @@ package com.wwkarev.operationengine.condition
  * Condition class with memorizing result. Сondition is evaluated only once.
  * @author Vitalii Karev (wwkarev)
  */
-class MemorizingCondition implements Condition {
+class MemorizingCondition extends Condition {
     private Condition condition
     private Boolean isValidResult
 
     MemorizingCondition(Condition condition) {
+        super(condition.getId())
         this.condition = condition
     }
 

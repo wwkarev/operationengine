@@ -1,45 +1,12 @@
 package com.wwkarev.operationengine.filter
 
 import com.wwkarev.operationengine.Operation
-import com.wwkarev.operationengine.condition.Condition
+import com.wwkarev.operationengine.condition.FalseCondition
+import com.wwkarev.operationengine.condition.TrueCondition
 import spock.lang.Shared
 import spock.lang.Specification
 
 class OperationFilterTest extends Specification {
-    static class TrueCondition implements Condition {
-        private String id
-
-        TrueCondition(String id) {
-            this.id = id
-        }
-
-        @Override
-        String getId() {
-            return id
-        }
-
-        @Override
-        Boolean isValid() {
-            return true
-        }
-    }
-    static class FalseCondition implements Condition {
-        private String id
-
-        FalseCondition(String id) {
-            this.id = id
-        }
-
-        @Override
-        String getId() {
-            return id
-        }
-
-        @Override
-        Boolean isValid() {
-            return false
-        }
-    }
 
     @Shared
     Operation<Void> operation1 = new Operation<Void>(UUID.randomUUID().toString(), new TrueCondition(UUID.randomUUID().toString()), null)

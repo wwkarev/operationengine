@@ -1,53 +1,39 @@
 package com.wwkarev.operationengine.condition
 
 
-import com.wwkarev.operationengine.condition.Condition
-import spock.lang.Shared
 import spock.lang.Specification
 
 class MemorizingConditionTest extends Specification {
+    static class CounterCondition extends Condition {
+        Integer count = 0
+        CounterCondition(String id) {
+            super(id)
+        }
+
+        @Override
+        Boolean isValid() {
+            count++
+            return true
+        }
+    }
 
     def "test MemorizingConditionTest"() {
         when:
-        Integer count1 = 0
-        Condition memorizingCondition = new MemorizingCondition(new Condition() {
-            @Override
-            String getId() {
-                return 'condition1'
-            }
-
-            @Override
-            Boolean isValid() {
-                count1++
-                return true
-            }
-        })
+        Condition memorizingCondition = new MemorizingCondition(new CounterCondition(UUID.randomUUID().toString()))
         memorizingCondition.isValid()
         memorizingCondition.isValid()
 
         then:
-        assert count1 == 1
+        assert ((CounterCondition)memorizingCondition.getCondition()).count == 1
     }
 
     def "test not MemorizingConditionTest"() {
         when:
-        Integer count1 = 0
-        Condition memorizingCondition = new Condition() {
-            @Override
-            String getId() {
-                return 'condition1'
-            }
-
-            @Override
-            Boolean isValid() {
-                count1++
-                return true
-            }
-        }
-        memorizingCondition.isValid()
-        memorizingCondition.isValid()
+        Condition condition = new CounterCondition(UUID.randomUUID().toString())
+        condition.isValid()
+        condition.isValid()
 
         then:
-        assert count1 == 2
+        assert ((CounterCondition)condition).count == 2
     }
 }
